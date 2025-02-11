@@ -1,0 +1,95 @@
+{
+  "name": "fiscal-printer-ex",
+  "version": "0.1.0",
+  "private": true,
+  "main": "public/electron.js",
+  "dependencies": {
+    "cra-template": "1.2.0",
+    "electron-store": "^8.1.0",
+    "electron-is-dev": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "socket.io-client": "^4.8.1",
+    "web-vitals": "^3.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.57",
+    "@types/react-dom": "^18.2.19",
+    "@types/socket.io-client": "^3.0.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^29.0.1",
+    "electron-builder": "^24.12.0",
+    "typescript": "^5.3.3",
+    "wait-on": "^7.2.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron:dev": "concurrently \"BROWSER=none pnpm start\" \"wait-on http://127.0.0.1:3000 && electron .\"",
+    "electron:build": "pnpm build && electron-builder -c.extraMetadata.main=build/electron.js",
+    "electron:build:win": "pnpm build && electron-builder -w",
+    "electron:build:mac": "pnpm build && electron-builder -m"
+  },
+  "build": {
+    "appId": "com.fiscal.printer",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "public/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "extraResources": [
+      {
+        "from": "node_modules/",
+        "to": "node_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "FiscalPrinter.exe"
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
