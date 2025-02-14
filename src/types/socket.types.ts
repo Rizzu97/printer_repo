@@ -8,6 +8,14 @@ export interface RegisterPayload {
   posIds: string[];
 }
 
+export interface RaisePrinterPayload {
+  posId: string;
+  circuitId: string;
+  type: string;
+  detail: any;
+  timestamp: string;
+}
+
 export interface RegisterResponse {
   success?: boolean;
   error?: string;

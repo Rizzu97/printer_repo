@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { RegisterForm } from "./components/RegisterForm";
-import { WebSocketEvents } from "./types/socket.types";
+import { WebSocketEvents, RaisePrinterPayload } from "./types/socket.types";
 import "./App.css";
 
 const SOCKET_URL = "ws://fp-socket.exagonplus.com";
@@ -15,7 +15,10 @@ interface PrintJob {
 interface ApiResponse {
   status: number;
   message: string;
-  data: PrintJob[];
+  data: {
+    url: string;
+    body: string;
+  };
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -27,8 +30,20 @@ function App(): JSX.Element {
     "connecting" | "connected" | "disconnected"
   >("connecting");
 
-  const handlePrinterRaise = async () => {
+  const handlePrinterRaise = async (data: RaisePrinterPayload) => {
     try {
+      const requestBody = {
+        email: "",
+        password: "",
+        id_circuit: data.circuitId,
+        id_pos: data.posId,
+        type: data.type,
+        details:
+          data.detail && Object.keys(data.detail).length > 0
+            ? JSON.stringify(data.detail)
+            : "",
+      };
+
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -36,36 +51,28 @@ function App(): JSX.Element {
           "X-App-Id": "exagon",
           "X-Organization-Id": "exagon",
         },
+        body: JSON.stringify(requestBody),
       });
 
       const result: ApiResponse = await response.json();
 
       if (result.status === 200) {
-        // Esegui le richieste una alla volta con delay
-        for (const job of result.data) {
-          const formattedBody = job.body.replace(/\\"/g, '"');
+        const formattedBody = result.data.body.replace(/\\"/g, '"');
 
-          console.log("Executing print job:", {
-            url: job.url,
-            body: formattedBody,
-          });
+        console.log("Executing print job:", {
+          url: result.data.url,
+          body: formattedBody,
+        });
 
-          await fetch(job.url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/xml",
-            },
-            body: formattedBody,
-          });
+        await fetch(result.data.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/xml",
+          },
+          body: formattedBody,
+        });
 
-          // Attendi 15 secondi prima del prossimo job
-          if (result.data.indexOf(job) < result.data.length - 1) {
-            console.log("Waiting 15 seconds before next job...");
-            await delay(15000);
-          }
-        }
-
-        console.log("All print jobs completed");
+        console.log("Print job completed");
       }
     } catch (error) {
       console.error("Error handling printer raise:", error);
@@ -89,10 +96,13 @@ function App(): JSX.Element {
       setIsRegistered(false);
     });
 
-    socketInstance.on(WebSocketEvents.RAISE_PRINTER, (data) => {
-      console.log("Received raise-printer event:", data);
-      handlePrinterRaise();
-    });
+    socketInstance.on(
+      WebSocketEvents.RAISE_PRINTER,
+      (data: RaisePrinterPayload) => {
+        console.log("Received raise-printer event:", data);
+        handlePrinterRaise(data);
+      }
+    );
 
     setSocket(socketInstance);
 

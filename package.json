@@ -31,10 +31,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron:dev": "concurrently \"BROWSER=none pnpm start\" \"wait-on http://127.0.0.1:3000 && electron .\"",
-    "electron:build": "pnpm build && electron-builder -c.extraMetadata.main=build/electron.js",
-    "electron:build:win": "pnpm build && electron-builder -w",
-    "electron:build:mac": "pnpm build && electron-builder -m"
+    "electron:dev": "concurrently -k \"set BROWSER=none && npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "npm run build && electron-builder -c.extraMetadata.main=build/electron.js",
+    "electron:build:win": "npm run build && electron-builder -w",
+    "electron:build:mac": "npm run build && electron-builder -m"
   },
   "build": {
     "appId": "com.fiscal.printer",
